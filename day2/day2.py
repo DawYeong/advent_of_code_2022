@@ -48,5 +48,22 @@ def solve_part_1():
     print(sum)
 
 
+OUTCOMES = {
+    "X": RockPaperScissorMatchup(score=0, A=3, B=1, C=2), # lose
+    "Y": RockPaperScissorMatchup(score=3, A=1, B=2, C=3), # draw
+    "Z": RockPaperScissorMatchup(score=6, A=2, B=3, C=1), # win
+}
+
+def solve_part_2():
+    match_ups = get_match_ups(FILE_NAME)
+
+    sum = 0
+
+    for match_up in match_ups:
+        round_value = OUTCOMES[match_up["second"]]["score"] + OUTCOMES[match_up["second"]][match_up["first"]]
+        sum += round_value
+
+    print(sum)
+
 if __name__ == "__main__":
-    solve_part_1()
+    solve_part_2()
