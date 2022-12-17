@@ -37,11 +37,17 @@ class Pair:
 
 class PairService:
     @staticmethod
-    def is_overlap(pair: Pair) -> bool:
+    def is_full_overlap(pair: Pair) -> bool:
         return (
             pair.first.start <= pair.second.start and pair.first.end >= pair.second.end
         ) or (
             pair.second.start <= pair.first.start and pair.second.end >= pair.first.end
+        )
+
+    @staticmethod
+    def is_overlap(pair: Pair) -> bool:
+        return not (
+            pair.first.end < pair.second.start or pair.second.end < pair.first.start
         )
 
 
@@ -60,11 +66,22 @@ def solve_part_1(file_name: str):
 
     result = 0
     for pair in pairs:
+        if PairService.is_full_overlap(pair):
+            result += 1
+
+    print(result)
+
+
+def solve_part_2(file_name: str):
+    pairs = get_pairs(file_name)
+
+    result = 0
+    for pair in pairs:
         if PairService.is_overlap(pair):
             result += 1
-    
+
     print(result)
 
 
 if __name__ == "__main__":
-    solve_part_1(FILE_NAME)
+    solve_part_2(FILE_NAME)
