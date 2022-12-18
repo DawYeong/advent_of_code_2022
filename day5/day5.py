@@ -20,7 +20,7 @@ class Cargo:
         self._setup = OrderedDict(sorted(setup.items()))
         self._instructions = instructions
 
-    def _handle_instruction(self, instruction: Instruction):
+    def _handle_instruction_single(self, instruction: Instruction):
         sender_num_items = len(self._setup[instruction.sender])
         num_items = min(sender_num_items, instruction.num_of_items)
 
@@ -30,11 +30,24 @@ class Cargo:
         self._setup[instruction.recipient].extend(move_items)
 
 
-    def handle_instructions(self):
+    def handle_instructions_single(self):
         while len(self._instructions) != 0:
             instruction = self._instructions.pop(0)
-            self._handle_instruction(instruction)
-        
+            self._handle_instruction_single(instruction)
+
+    def _handle_instruction_multi(self, instruction: Instruction):
+        sender_num_items = len(self._setup[instruction.sender])
+        num_items = min(sender_num_items, instruction.num_of_items)
+
+        move_items = self._setup[instruction.sender][sender_num_items-num_items:sender_num_items]
+        del self._setup[instruction.sender][sender_num_items-num_items:sender_num_items]
+        self._setup[instruction.recipient].extend(move_items)
+
+    def handle_instructions_multi(self):
+        while len(self._instructions) != 0:
+            instruction = self._instructions.pop(0)
+            self._handle_instruction_multi(instruction)
+
     def print_result(self):
         result = ""
         for item in self._setup.items():
@@ -104,9 +117,13 @@ def get_cargo(file_name: str) -> Cargo:
 
 def solve_part_1(file_name: str):
     cargo = get_cargo(file_name)
-    cargo.handle_instructions()
+    cargo.handle_instructions_single()
     cargo.print_result()
 
+def solve_part_2(file_name: str):
+    cargo = get_cargo(file_name)
+    cargo.handle_instructions_multi()
+    cargo.print_result()
 
 if __name__ == "__main__":
-    solve_part_1(FILE_NAME)
+    solve_part_2(FILE_NAME)
