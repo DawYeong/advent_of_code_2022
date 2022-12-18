@@ -94,10 +94,10 @@ class FileSystem:
         # pretty hacky, there are going to be folders with the same name that will be overwritten
         # adding prefix if folder name already exists (can change it to path name to avoid this hack)
         key_name = (
-            folder_name
+            f"{folder_name}_{len(self._total_sizes.items())}"
             if self._total_sizes.get(folder_name, None)
-            else f"{folder_name}_{len(self._total_sizes.items())}"
-        ) 
+            else folder_name
+        )
         self._total_sizes[key_name] = file_sizes
         return file_sizes
 
@@ -143,6 +143,12 @@ def build_file_system(commands: str) -> FileSystem:
     return file_system
 
 
+def find_smallest_folder_to_delete(space_required: int, folder_sizes: List[int]) -> int:
+    for folder_size in folder_sizes:
+        if folder_size > space_required:
+            return folder_size
+
+
 def solve_part_1(file_name: str):
     commands = get_input_data(file_name)
     file_system = build_file_system(commands)
@@ -152,5 +158,19 @@ def solve_part_1(file_name: str):
     print(sum(filtered_folders.values()))
 
 
+def solve_part_2(file_name: str):
+    commands = get_input_data(file_name)
+    file_system = build_file_system(commands)
+    folder_sizes = list(file_system.get_folder_sizes().values())
+    folder_sizes.sort()
+
+    space_required = 30000000 - (70000000 - folder_sizes[len(folder_sizes) - 1])
+    smallest_folder = find_smallest_folder_to_delete(
+        space_required=space_required,
+        folder_sizes=folder_sizes,
+    )
+    print(smallest_folder)
+
+
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
