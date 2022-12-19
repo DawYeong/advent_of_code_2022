@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import List
 import os
 
 SCRIPT_FOLDER_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -39,9 +39,9 @@ class RopeBridge:
     _tail: Position
     _visited: List[Position]
 
-    def __init__(self):
-        self._head = Position(x=0, y=0)
-        self._tail = Position(x=0, y=0)
+    def __init__(self, head: Position, tail: Position):
+        self._head = head
+        self._tail = tail
         self._visited = [Position(x=0, y=0)]
 
     def _is_tail_touching_head(self):
@@ -50,7 +50,7 @@ class RopeBridge:
             and abs(self._head.y - self._tail.y) < 2
         )
 
-    def _move_head(self, direction: Direction):
+    def move_head(self, direction: Direction):
         if direction == Direction.R:
             self._head.x += 1
         elif direction == Direction.L:
@@ -62,7 +62,7 @@ class RopeBridge:
         else:
             raise ValueError("Invalid Direction")
 
-    def _move_tail(self):  # relies on the head position
+    def move_tail(self):  # relies on the head position
         if self._is_tail_touching_head():
             return
 
@@ -84,8 +84,7 @@ class RopeBridge:
             elif y_distance_from_head > 0:
                 # move up
                 self._tail.y -= 1
-
-        if abs(y_distance_from_head) == 2:
+        elif abs(y_distance_from_head) == 2:
             if y_distance_from_head < 0:
                 # move down
                 self._tail.y += 1
@@ -108,16 +107,22 @@ class RopeBridge:
                 )
             )
 
-    def handle_instruction(self, instruction: Instruction):
+    def handle_root(self, instruction: Instruction):
         for _ in range(instruction.distance):
             # move head
-            self._move_head(instruction.direction)
+            self.move_head(instruction.direction)
             # move tail
-            self._move_tail()
+            self.move_tail()
+
 
     def get_num_tail_visited(self) -> int:
         return len(self._visited)
 
+    def get_tail(self) -> Position:
+        return self._tail
+
+    def __str__(self) -> str:
+        return f"Head: {self._head}, Tail: {self._tail}"
 
 def create_instruction_from_raw_string(raw_string: str) -> Instruction:
     split_raw_string = raw_string.split(" ")
@@ -140,16 +145,48 @@ def get_instructions(file_name: str) -> List[Instruction]:
 
     return instructions
 
+
 # this runs pretty slow...
 def solve_part_1(file_name: str):
     instructions = get_instructions(file_name)
     rope_bridge = RopeBridge()
     for instruction in instructions:
-        rope_bridge.handle_instruction(instruction)
+        rope_bridge.handle_root(instruction)
 
     num_of_visited = rope_bridge.get_num_tail_visited()
     print(num_of_visited)
 
+# this is incredibly slow...
+def solve_part_2(file_name: str):
+    instructions = get_instructions(file_name)
+    rope_bridges = [
+        RopeBridge(
+            head=Position(
+                x=0,
+                y=0,
+            ),
+            tail=Position(
+                x=0,
+                y=0,
+            ),
+        )
+    ]
+    for i in range(9):
+        rope_bridges.append(
+            RopeBridge(
+                head=rope_bridges[i].get_tail(),
+                tail=Position(x=0, y=0),
+            )
+        )
+    for instruction in instructions:
+        for j in range(instruction.distance):
+            rope_bridges[0].move_head(instruction.direction)
+            for i in range(len(rope_bridges)):
+                rope_bridges[i].move_tail()            
+
+    num_of_visited = rope_bridges[8].get_num_tail_visited()
+    print(num_of_visited)
+
 
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
