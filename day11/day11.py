@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-import math
 import os
 from typing import List, Optional
 
@@ -24,17 +23,6 @@ class Operation:
 class ItemSend:
     monkey_id: int
     item: int
-
-
-def square_multiply(a, b, c):
-    # calculate the form a^b mod c
-    result = a
-    bin_b = bin(b)[2:]
-    for i in range(1, len(bin_b)):
-        result = pow(result, 2) % c
-        if bin_b[i] == "1":
-            result = (result * a) % c
-    return result
 
 
 class Monkey:
