@@ -6,6 +6,7 @@ from typing import List, Optional
 
 SCRIPT_FOLDER_PATH = os.path.dirname(os.path.realpath(__file__))
 FILE_NAME = "input.txt"
+TEST_FILE_NAME = "test.txt"
 
 
 class OperationType(str, Enum):
@@ -23,6 +24,17 @@ class Operation:
 class ItemSend:
     monkey_id: int
     item: int
+
+
+def square_multiply(a, b, c):
+    # calculate the form a^b mod c
+    result = a
+    bin_b = bin(b)[2:]
+    for i in range(1, len(bin_b)):
+        result = pow(result, 2) % c
+        if bin_b[i] == "1":
+            result = (result * a) % c
+    return result
 
 
 class Monkey:
@@ -52,7 +64,9 @@ class Monkey:
         self._false_monkey = false_monkey
         self._num_of_inspected_items = 0
 
-    def inspect(self) -> List[ItemSend]:
+    def inspect(
+        self, modulo: Optional[int] = None, is_relief: bool = True
+    ) -> List[ItemSend]:
         sending_items = []
         while len(self._items) != 0:
             item = self._items.pop(0)
@@ -65,7 +79,9 @@ class Monkey:
             else:
                 raise ValueError(f"Unexpected Operation: {self._operation.op}")
 
-            relief = math.floor(new / 3)
+            # idea for big numbers => (a mod M) mod m1 = a mod m1 where M = m1*m2*m3...
+            # so instead of storing a (very large) we can store (a mod M), which is much smaller
+            relief = new // 3 if is_relief else new % modulo
 
             monkey_send = (
                 self._true_monkey
@@ -127,10 +143,15 @@ def get_monkeys(file_name: str) -> List[Monkey]:
     return monkeys
 
 
-def handle_monkeys(monkeys: List[Monkey]) -> List[int]:
-    for _ in range(20):
+def handle_monkeys(
+    monkeys: List[Monkey], rounds: int, modulo: int, is_relief: bool = True
+) -> List[int]:
+    for _ in range(rounds):
         for monkey in monkeys:
-            monkey_sends = monkey.inspect()
+            monkey_sends = monkey.inspect(
+                modulo=modulo,
+                is_relief=is_relief,
+            )
             for sends in monkey_sends:
                 monkeys[sends.monkey_id].add_item(sends.item)
 
@@ -141,10 +162,31 @@ def handle_monkeys(monkeys: List[Monkey]) -> List[int]:
 
 def solve_part_1(file_name: str):
     monkeys = get_monkeys(file_name)
-    num_of_inspected = handle_monkeys(monkeys)
+    num_of_inspected = handle_monkeys(
+        monkeys=monkeys,
+        rounds=20,
+        modulo=1,
+    )
+    monkey_business = num_of_inspected[0] * num_of_inspected[1]
+    print(f"Monkey Business: {monkey_business}")
+
+
+def solve_part_2(file_name: str):
+    monkeys = get_monkeys(file_name)
+
+    modulo = 1
+    for monkey in monkeys:
+        modulo *= monkey._divisible_value
+
+    num_of_inspected = handle_monkeys(
+        monkeys=monkeys,
+        rounds=10000,
+        modulo=modulo,
+        is_relief=False,
+    )
     monkey_business = num_of_inspected[0] * num_of_inspected[1]
     print(f"Monkey Business: {monkey_business}")
 
 
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
