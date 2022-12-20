@@ -62,11 +62,7 @@ def get_grid(file_name: str) -> List[List[Position]]:
 
             for c in data_line:
                 if c == "S":
-                    row.append(
-                        Position(
-                            elevation=0
-                        )
-                    )
+                    row.append(Position(elevation=0))
                 elif c == "E":
                     row.append(Position(elevation=27))
                 else:
@@ -158,6 +154,7 @@ def find_end(grid: List[List[Position]]) -> Optional[Position]:
 
     return None
 
+
 def find_start(grid: List[List[Position]]) -> Optional[Position]:
     for row in grid:
         for col in row:
@@ -165,6 +162,7 @@ def find_start(grid: List[List[Position]]) -> Optional[Position]:
                 return col
 
     return None
+
 
 def find_a(grid: List[List[Position]]) -> List[Position]:
     result = []
@@ -175,11 +173,13 @@ def find_a(grid: List[List[Position]]) -> List[Position]:
 
     return result
 
+
 def reset_grid(grid: List[List[Position]]):
     for row in grid:
         for col in row:
             col.set_distance(sys.maxsize)
             col.set_visited(False)
+
 
 def solve_part_1(file_name: str):
     # solved using Dijkstra's
@@ -198,6 +198,7 @@ def solve_part_1(file_name: str):
         print("Could not find an end...")
 
     print(f"Distance to end: {end.get_distance()}")
+
 
 # Will take a while... performing same algorithm multiple times (a little over 10 mins...)
 def solve_part_2(file_name: str):
@@ -220,9 +221,10 @@ def solve_part_2(file_name: str):
         results.append(end.get_distance())
         reset_grid(grid)
         print(f"Finished: {count}/{len(starting_pos)}")
-        
+
     print(results)
     print(f"Shortest dist to end: {min(results)}")
+
 
 if __name__ == "__main__":
     solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
