@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from functools import cmp_to_key
 import os
 from typing import List, Tuple
 
@@ -118,6 +119,19 @@ def get_pairs(file_name: str) -> List[Pair]:
     return pairs
 
 
+def compare(item1, item2):
+    compare = is_list_in_correct_order(
+        left=item1,
+        right=item2,
+    )
+    if compare == Compare.GT:
+        return -1
+    elif compare == Compare.EQ:
+        return 0
+    else:
+        return 1
+
+
 def solve_part_1(file_name: str):
     pairs = get_pairs(file_name)
     result = 0
@@ -132,5 +146,23 @@ def solve_part_1(file_name: str):
     print(result)
 
 
+def solve_part_2(file_name: str):
+    pairs = get_pairs(file_name)
+    items = []
+    for pair in pairs:
+        items.append(pair.first)
+        items.append(pair.second)
+    divider_packet_1 = [[2]]
+    divider_packet_2 = [[6]]
+    items.append(divider_packet_1)
+    items.append(divider_packet_2)
+
+    sorted_items = sorted(items, key=cmp_to_key(compare))
+    decoder_key = (sorted_items.index(divider_packet_1) + 1) * (
+        sorted_items.index(divider_packet_2) + 1
+    )
+    print(f"Decoder Key: {decoder_key}")
+
+
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
