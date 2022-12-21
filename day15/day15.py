@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from itertools import combinations
 import os
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Set
 
 
 SCRIPT_FOLDER_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -45,6 +45,8 @@ class BeaconZone:
     def get_block_range_at_level(
         self,
         y: int,
+        part_2: bool,
+        max_range: int = 0,
     ) -> Optional[Range]:
         distance_required = abs(y - self._signal.y)
         if distance_required > self._beacon_distance:
@@ -52,8 +54,12 @@ class BeaconZone:
 
         remaining_x_dist = self._beacon_distance - distance_required
         return Range(
-            start=self._signal.x - remaining_x_dist,
-            end=self._signal.x + remaining_x_dist,
+            start=self._signal.x - remaining_x_dist
+            if not part_2
+            else max(self._signal.x - remaining_x_dist, 0),
+            end=self._signal.x + remaining_x_dist
+            if not part_2
+            else min(self._signal.x + remaining_x_dist, max_range),
         )
 
     def is_beacon_on_level(
@@ -138,10 +144,16 @@ def combine_overlapping_ranges(ranges: List[Range]):
 def get_blocked_ranges(
     beacon_zones: List[BeaconZone],
     row: int,
+    part_2: bool = False,
+    max_range: int = 0,
 ) -> List[Range]:
     blocked_ranges = []
     for beacon_zone in beacon_zones:
-        ranges = beacon_zone.get_block_range_at_level(y=row)
+        ranges = beacon_zone.get_block_range_at_level(
+            y=row,
+            part_2=part_2,
+            max_range=max_range,
+        )
         if ranges:
             blocked_ranges.append(ranges)
 
@@ -154,6 +166,7 @@ def get_blocked_positions(
     beacon_zones: List[BeaconZone],
     row: int,
     blocked_ranges: List[Range],
+    part_2: bool = False,
 ) -> int:
     num_beacons = len(
         set(
@@ -163,6 +176,8 @@ def get_blocked_positions(
                 if beacon_zone.is_beacon_on_level(row)
             ]
         )
+        if not part_2
+        else []
     )
 
     total_blocked_positions = 0
@@ -172,10 +187,39 @@ def get_blocked_positions(
     return total_blocked_positions - num_beacons
 
 
+def find_missing_number(
+    max_number: int,
+    ranges: List[Range],
+) -> Set[int]:
+    check_range = set(
+        list(
+            range(
+                0,
+                max_number + 1,
+            )
+        )
+    )
+    # print(check_range)
+    for r in ranges:
+        check_range = check_range - set(
+            list(
+                range(
+                    max(0, r.start),
+                    min(max_number + 1, r.end + 1),
+                )
+            )
+        )
+        # updating range according to min and max
+    return check_range
+
+
 def solve_part_1(file_name: str):
     beacon_zones = get_beacon_zones(file_name)
     check_row = 2000000
-    blocked_ranges = get_blocked_ranges(beacon_zones=beacon_zones, row=check_row)
+    blocked_ranges = get_blocked_ranges(
+        beacon_zones=beacon_zones,
+        row=check_row,
+    )
     total_block_positions = get_blocked_positions(
         beacon_zones=beacon_zones,
         row=check_row,
@@ -184,5 +228,39 @@ def solve_part_1(file_name: str):
     print(total_block_positions)
 
 
+# hacky solution and pretty slow ~ 1.5 mins
+# we loop through all the possible rows and find one with an unblocked position
+# since every possible position is 0 to 4000000 => there should 1 row with 4000000 blocked positions while others have 4000001
+# then take the differences between the ranges => create sets using range and subtract from each other (very inefficient)
+def solve_part_2(file_name: str):
+    beacon_zones = get_beacon_zones(file_name)
+    tuning_constant = 4000000
+    tuning_freq = 0
+    for i in range(tuning_constant + 1):
+        blocked_ranges = get_blocked_ranges(
+            beacon_zones=beacon_zones,
+            row=i,
+            part_2=True,
+            max_range=tuning_constant,
+        )
+        total_block_positions = get_blocked_positions(
+            beacon_zones=beacon_zones,
+            row=i,
+            blocked_ranges=blocked_ranges,
+            part_2=True,
+        )
+
+        if total_block_positions == tuning_constant:
+            missing_number = find_missing_number(
+                max_number=tuning_constant,
+                ranges=blocked_ranges,
+            )
+            if missing_number:
+                tuning_freq = next(iter(missing_number)) * tuning_constant + i
+                break
+
+    print(f"Tuning Frequency: {tuning_freq}")
+
+
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
