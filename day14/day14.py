@@ -42,16 +42,35 @@ def get_rocks(file_name: str) -> Set[Position]:
                 # builds out the horizontal lines
                 for x in range(x1, x2 + 1):
                     for y in range(y1, y2 + 1):
-                        rocks.add(Position(x=x, y=y))
+                        rocks.add(
+                            Position(
+                                x=x,
+                                y=y,
+                            )
+                        )
     return rocks
 
 
-def drop_sand(rocks: Set[Position]) -> bool:
-    curr_sand_pos = Position(x=500, y=0)
-    abyss = max(rocks).y + 1
+def drop_sand(
+    rocks: Set[Position],
+    max_height: int,
+    part_2: bool,
+) -> bool:
+    curr_sand_pos = Position(
+        x=500,
+        y=0,
+    )
+
     while True:
-        check_pos = Position(x=curr_sand_pos.x, y=curr_sand_pos.y + 1)
-        if curr_sand_pos.y > abyss:
+        check_pos = Position(
+            x=curr_sand_pos.x,
+            y=curr_sand_pos.y + 1,
+        )
+
+        if part_2 and curr_sand_pos.y == (max_height + 1):
+            rocks.add(curr_sand_pos)
+            return True
+        elif not part_2 and curr_sand_pos.y >= max_height:
             return False
 
         if not check_pos in rocks:
@@ -59,37 +78,63 @@ def drop_sand(rocks: Set[Position]) -> bool:
             curr_sand_pos = check_pos
             continue
 
-        check_pos = Position(x=curr_sand_pos.x - 1, y=curr_sand_pos.y + 1)
+        check_pos = Position(
+            x=curr_sand_pos.x - 1,
+            y=curr_sand_pos.y + 1,
+        )
         if not check_pos in rocks:
             curr_sand_pos = check_pos
             continue
 
-        check_pos = Position(x=curr_sand_pos.x + 1, y=curr_sand_pos.y + 1)
+        check_pos = Position(
+            x=curr_sand_pos.x + 1,
+            y=curr_sand_pos.y + 1,
+        )
         if not check_pos in rocks:
             curr_sand_pos = check_pos
             continue
 
         rocks.add(curr_sand_pos)
-        return True
+        return True if curr_sand_pos.y != 0 else False
 
 
-def simulate_sand(rocks: Set[Position]) -> int:
+def simulate_sand(
+    rocks: Set[Position],
+    part_2: bool,
+) -> int:
     sand_added = 0
+    max_height = max(rocks).y
     while True:
         # check if anything is directly below
-        if drop_sand(rocks):
+        if drop_sand(
+            rocks=rocks,
+            max_height=max_height,
+            part_2=part_2,
+        ):
             sand_added += 1
         else:
             break
 
-    return sand_added
+    return sand_added + 1 if part_2 else sand_added
 
 
 def solve_part_1(file_name: str):
     rocks = get_rocks(file_name)
-    num_sand = simulate_sand(rocks)
+    num_sand = simulate_sand(
+        rocks=rocks,
+        part_2=False,
+    )
+    print(num_sand)
+
+
+def solve_part_2(file_name: str):
+    rocks = get_rocks(file_name)
+    num_sand = simulate_sand(
+        rocks=rocks,
+        part_2=True,
+    )
     print(num_sand)
 
 
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
