@@ -1,8 +1,6 @@
-import copy
 from dataclasses import dataclass
 import os
-from typing import Dict, List, Optional, Tuple, Set
-from pprint import pprint
+from typing import Dict, List
 
 
 SCRIPT_FOLDER_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -74,27 +72,24 @@ def get_valve_distances(graph: Dict[str, Valve]) -> Dict:
 
     return dists
 
-
+cache = {}
 def traverse(
     graph: Dict[str, Valve],
     dists: Dict,
-    visited: List[str],
-    dp: Dict,
+    visited: int,
     time_left: int,
     valve: Valve,
 ):
     key = f"time_left={time_left},valve={valve.id},visited={visited}"
-    if key in dp:
-        return dp[key]
-
-    # visited this node
-    visited.append(valve.id)
+    if key in cache:
+        return cache[key]
 
     ans = 0
     for neighbor in dists[valve.id]:
-        if neighbor in visited:
+        visit = 1 << list(dists.keys()).index(neighbor)
+        if visit & visited:
             continue
-        
+
         # if neighbor not visited, visit it
         # travel to valve and turn on valve (-1)
         temp_time = time_left - dists[valve.id][neighbor] - 1
@@ -108,15 +103,14 @@ def traverse(
             traverse(
                 graph=graph,
                 dists=dists,
-                dp=dp,
-                visited=copy.deepcopy(visited),
+                visited=visited | visit,
                 time_left=temp_time,
                 valve=graph[neighbor],
             )
             + temp_time * graph[neighbor].pressure,
         )
 
-    dp[key] = ans
+    cache[key] = ans
     return ans
 
 
@@ -128,13 +122,46 @@ def solve_part_1(file_name: str):
     ans = traverse(
         graph=valve_graph,
         dists=valve_distances,
-        visited=[],
-        dp={},
+        visited=0,
         time_left=time_left,
         valve=valve_graph["AA"],
     )
     print(f"ans: {ans}")
 
 
+def solve_part_2(file_name: str):
+    valve_graph = get_valve_graph(file_name)
+    valve_distances = get_valve_distances(valve_graph)
+    time_left = 26
+
+    # idea is that we can set up the player and elephant visit beforehand
+    # this is to ensure that the player and elephant travel to the valves that aren't visited by each other
+    # soln pretty slow, could use simpler data structures ~ 1m 45s
+
+    visited_combinations = ((1 << len(valve_distances)) - 1)
+    ans = 0
+    for i in range((visited_combinations + 1)//2):
+        ans = max(
+            ans,
+            traverse(
+                graph=valve_graph,
+                dists=valve_distances,
+                visited=i,
+                time_left=time_left,
+                valve=valve_graph["AA"],
+            )
+            + traverse(
+                graph=valve_graph,
+                dists=valve_distances,
+                visited=visited_combinations-i,
+                time_left=time_left,
+                valve=valve_graph["AA"],
+            ),
+        )
+
+    print(f"ans: {ans}")
+
+
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+
