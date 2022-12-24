@@ -1,25 +1,60 @@
-from rock.models.Rock import Rock
-from rock.models.Cross import Cross
-from rock.models.Flat import Flat
-from rock.models.Long import Long
-from rock.models.LShape import LShape
-from rock.models.Square import Square
+from typing import Set, Tuple
 
 
 class RockFactory:
     @staticmethod
-    def create(curr_num_of_shapes: int, start_x: int, start_y: int) -> Rock:
+    def create(
+        curr_num_of_shapes: int, start_x: int, start_y: int
+    ) -> Set[Tuple[int, int]]:
         pick_shape = curr_num_of_shapes % 5
 
         if pick_shape == 0:
-            return Flat(start_x=start_x, start_y=start_y,)
+            return set(
+                [
+                    (start_x, start_y),
+                    (start_x + 1, start_y),
+                    (start_x + 2, start_y),
+                    (start_x + 3, start_y),
+                ]
+            )
         elif pick_shape == 1:
-            return Cross(start_x=start_x, start_y=start_y,)
+            return set(
+                [
+                    (start_x, start_y + 1),
+                    (start_x + 1, start_y),
+                    (start_x + 1, start_y + 1),
+                    (start_x + 1, start_y + 2),
+                    (start_x + 2, start_y + 1),
+                ]
+            )
         elif pick_shape == 2:
-            return LShape(start_x=start_x, start_y=start_y,)
+            return set(
+                [
+                    (start_x, start_y),
+                    (start_x + 1, start_y),
+                    (start_x + 2, start_y),
+                    (start_x + 2, start_y + 1),
+                    (start_x + 2, start_y + 2),
+                ]
+            )
         elif pick_shape == 3:
-            return Long(start_x=start_x, start_y=start_y,)
+            return set(
+                [
+                    (start_x, start_y),
+                    (start_x, start_y + 1),
+                    (start_x, start_y + 2),
+                    (start_x, start_y + 3),
+                ]
+            )
+
         elif pick_shape == 4:
-            return Square(start_x=start_x, start_y=start_y,)
+            return set(
+                [
+                    (start_x, start_y),
+                    (start_x, start_y + 1),
+                    (start_x + 1, start_y),
+                    (start_x + 1, start_y + 1),
+                ]
+            )
         else:
             raise Exception("Unexpected create path")
