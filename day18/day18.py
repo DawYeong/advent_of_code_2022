@@ -13,7 +13,9 @@ class DFSService:
     _cubes: Set[Tuple[int, int, int]]
     _faces: List[Tuple[int, int, int]]
 
-    def __init__(self, cubes: Set[Tuple[int, int, int]], faces: List[Tuple[int, int, int]]):
+    def __init__(
+        self, cubes: Set[Tuple[int, int, int]], faces: List[Tuple[int, int, int]]
+    ):
         self._min_coord = min([min(x, y, z) for (x, y, z) in faces])
         self._max_coord = max([max(x, y, z) for (x, y, z) in faces])
         self._cubes = cubes
@@ -49,7 +51,6 @@ class DFSService:
 
         return False
 
-
     def get_exposed_faces(self) -> int:
         return sum([self._is_face_exposed(face) for face in self._faces])
 
@@ -79,7 +80,6 @@ def get_cubes(file_name: str) -> Set[Tuple[int, int, int]]:
     return cubes
 
 
-
 def solve_part_1(file_name: str):
     cubes = get_cubes(file_name)
     faces = []
@@ -89,14 +89,17 @@ def solve_part_1(file_name: str):
     print(len(faces))
 
 
-# ~ 3 sec => not horrible, not great 
+# ~ 3 sec => not horrible, not great
 def solve_part_2(file_name: str):
     cubes = get_cubes(file_name)
     faces = []
     for c in cubes:
         faces.extend(get_faces(x=c[0], y=c[1], z=c[2]))
 
-    dfs_service = DFSService(cubes=cubes, faces=faces,)
+    dfs_service = DFSService(
+        cubes=cubes,
+        faces=faces,
+    )
     ans = dfs_service.get_exposed_faces()
     print(ans)
 
