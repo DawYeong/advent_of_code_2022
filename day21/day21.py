@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 SCRIPT_FOLDER_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -10,14 +10,14 @@ TEST_FILE_NAME = "test.txt"
 # not the cleanest class, could make a dataclass and then have a service class handle logic...
 class Monkey:
     id: str
-    value: int
+    value: Optional[int]
     expression: Optional[str]
     children: Optional[List[str]]
 
     def __init__(
         self,
         id: str,
-        value: int = 0,
+        value: Optional[int] = 0,
         expression: Optional[str] = None,
         children: Optional[List[str]] = None,
     ):
@@ -39,7 +39,7 @@ class Monkey:
         return str(self)
 
 
-def get_monkeys(file_name: str) -> List[Monkey]:
+def get_monkeys(file_name: str, part_2: bool = False) -> List[Monkey]:
     monkeys = []
     with open(file_name, "r") as file:
         while True:
@@ -52,7 +52,9 @@ def get_monkeys(file_name: str) -> List[Monkey]:
                 monkeys.append(
                     Monkey(
                         id=raw_string[0],
-                        value=int(raw_string[1]),
+                        value=int(raw_string[1])
+                        if raw_string[0] != "humn" or not part_2
+                        else None,
                     )
                 )
             elif len(raw_string) == 4:
@@ -77,7 +79,9 @@ def get_monkey_from_id(monkeys: List[Monkey], id: str) -> Monkey:
     raise Exception(f"Can't find monkey: {id}")
 
 
-def traverse_monkeys(monkeys: List[Monkey], monkey_id: str) -> int:
+def traverse_monkeys(
+    monkeys: List[Monkey], monkey_id: str
+) -> Optional[Union[int, List]]:
     monkey = get_monkey_from_id(
         monkeys=monkeys,
         id=monkey_id,
@@ -95,6 +99,11 @@ def traverse_monkeys(monkeys: List[Monkey], monkey_id: str) -> int:
         monkey_id=monkey.children[1],
     )
 
+    if not left or not right or isinstance(left, list) or isinstance(right, list):
+        return (
+            [left, monkey.expression, right] if monkey_id != "root" else [left, right]
+        )
+
     value = 0
     if monkey.expression == "+":
         value = left + right
@@ -111,6 +120,51 @@ def traverse_monkeys(monkeys: List[Monkey], monkey_id: str) -> int:
     return value
 
 
+def get_human(final_number: int, human: List) -> int:
+    left = human[0]
+    expression = human[1]
+    right = human[2]
+
+    num, list_express, is_list_on_right = (
+        (
+            left,
+            right,
+            True,
+        )
+        if isinstance(left, int)
+        else (
+            right,
+            left,
+            False,
+        )
+    )
+    updated_number = 0
+    if expression == "+":
+        updated_number = final_number - num
+    elif expression == "*":
+        updated_number = final_number // num
+    elif expression == "-":
+        if is_list_on_right:
+            updated_number = num - final_number
+        else:
+            updated_number = final_number + num
+    elif expression == "/":
+        if is_list_on_right:
+            updated_number = num // final_number
+        else:
+            updated_number = final_number * num
+    else:
+        raise Exception(f"Unexpected expression: {expression}")
+
+    if left == None or right == None:
+        return updated_number
+
+    return get_human(
+        final_number=updated_number,
+        human=list_express,
+    )
+
+
 def solve_part_1(file_name: str):
     monkeys = get_monkeys(file_name)
 
@@ -122,5 +176,23 @@ def solve_part_1(file_name: str):
     )
 
 
+def solve_part_2(file_name: str):
+    monkeys = get_monkeys(
+        file_name=file_name,
+        part_2=True,
+    )
+
+    expression = traverse_monkeys(
+        monkeys=monkeys,
+        monkey_id="root",
+    )
+    left = expression[0]
+    right = expression[1]
+
+    final_number, human = (left, right) if isinstance(right, list) else (right, left)
+    human = get_human(final_number=final_number, human=human)
+    print(f"Human value: {human}")
+
+
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
