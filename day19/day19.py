@@ -7,7 +7,8 @@ SCRIPT_FOLDER_PATH = os.path.dirname(os.path.realpath(__file__))
 FILE_NAME = "input.txt"
 TEST_FILE_NAME = "test.txt"
 
-TIME_LIMIT = 24
+TIME_LIMIT_1 = 24
+TIME_LIMIT_2 = 32
 
 
 class Blueprint:
@@ -102,13 +103,27 @@ def solve_part_1(file_name: str):
         ans += (
             BlueprintService.get_most_geode_from_blueprint(
                 blueprint=blueprint,
-                time_limit=TIME_LIMIT,
+                time_limit=TIME_LIMIT_1,
             )
             * blueprint.id
         )
 
     print(f"Quality level: {ans}")
 
+def solve_part_2(file_name: str):
+    blueprints = get_blueprints(file_name)[:3]
+
+    ans = 1
+    for blueprint in blueprints:
+        ans *= (
+            BlueprintService.get_most_geode_from_blueprint(
+                blueprint=blueprint,
+                time_limit=TIME_LIMIT_2,
+            )
+        )
+
+    print(f"Part 2: {ans}")
+
 
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
