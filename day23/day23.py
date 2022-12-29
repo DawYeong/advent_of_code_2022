@@ -32,6 +32,16 @@ class Map:
 
         return self._get_map_size() - len(self._elves)
 
+    def get_rounds(self) -> int:
+        round = 0
+        curr_elves = {}
+        while curr_elves != self._elves:
+            curr_elves = self._elves
+            self._update_elves(round)
+            round += 1
+
+        return round
+
     def _update_elves(self, dir: int) -> Set[Tuple[int, int]]:
         propose = {
             elf: self._check_elf_direction(elf=elf, curr_dir=dir) for elf in self._elves
@@ -98,6 +108,12 @@ def solve_part_1(file_name: str):
     map = get_map(file_name)
     empty_tiles = map.get_empty_tiles(rounds=10)
     print(f"Empty tiles: {empty_tiles}")
+
+
+def solve_part_1(file_name: str):
+    map = get_map(file_name)
+    rounds = map.get_rounds()
+    print(f"Rounds: {rounds}")
 
 
 if __name__ == "__main__":
