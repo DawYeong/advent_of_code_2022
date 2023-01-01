@@ -57,7 +57,10 @@ class Map:
             }
 
             next_positions = {
-                (px + dx if px + dx >= -1 else px, py + dy if py + dy >= -1 else py)
+                (
+                    px + dx if -1 <= px + dx <= self._max_width else px,
+                    py + dy if -1 <= py + dy <= self._max_height else py,
+                )
                 for dx, dy in PLAYER_MOVEMENT
                 for px, py in queue
             }
@@ -110,5 +113,19 @@ def solve_part_1(file_name: str):
     print(f"Final Time: {time}")
 
 
+def solve_part_2(file_name: str):
+    map = get_map(file_name)
+    travel_destinations = [True, False, True]
+    next_time = 0
+    for travel_destination in travel_destinations:
+        time = map.traverse(
+            start_time=next_time,
+            is_beginning=travel_destination,
+        )
+        next_time = time
+
+    print(f"Final Time: {next_time}")
+
+
 if __name__ == "__main__":
-    solve_part_1(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
+    solve_part_2(f"{SCRIPT_FOLDER_PATH}/{FILE_NAME}")
