@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import os
 from typing import Set, Tuple
 
@@ -8,14 +7,6 @@ FILE_NAME = "input.txt"
 TEST_FILE_NAME = "test.txt"
 
 PLAYER_MOVEMENT = ((1, 0), (0, 1), (-1, 0), (0, -1), (0, 0))
-
-
-@dataclass
-class Blizzard:
-    x: int
-    y: int
-    # 0: right, 1: left, 2: up, 3: down
-    dir: int
 
 
 class Map:
